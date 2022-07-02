@@ -20,43 +20,80 @@ $(document).ready(function(){
      </div>\n
      </div>`);
   }   
-  
 
   var precioTotal = 0;  
+  var carrito=[]
 
   /*AGREGAR ITEMS AL LISTADO DEL CARRITO Y CALCULAR PRECIO*/ 
   $(".boton-agregar").click(function(){
 
-    var nombreItem = $(this).text('Agregado').parents('.card').children('.card-body').children('h4').text();
-    var precioItem = $(this).text('Agregado').parents('.card').children('.card-body').children('h5').text();  
-    var idItem = $(this).text('Agregado').parents('.card').children('.card-body').children('h6').text();  
+    $(this).text("Agregado").attr('disabled', true);
+    var nombreItem = $(this).parents('.card').children('.card-body').children('h4').text();
+    var precioItem = parseFloat($(this).parents('.card').children('.card-body').children('h5').text().substring(1));
     
-    $('#carrito').append(`<li>1 x ${nombreItem} <span>${precioItem}</span> <button type="button" id="boton-eliminar${idItem}" 
-    class="btn btn-outline-danger">X</button></li>`);
-       
-    precioTotal += parseFloat(precioItem.substring(1));
-    console.log(precioTotal)
+    var item =[nombreItem,precioItem]
+    carrito.push(item);
     
-    $('.precio-total').text(precioTotal.toFixed(2));   
+    //carrito.filter((item, index)=> carrito.indexOf(item)==index)
 
-    
-    /*BOTONES PARA ELIMINAR CADA ITEM DEL LISTADO DEL CARRITO Y CALCULAR PRECIO*/ 
+    console.log(carrito);
 
-    $("#boton-eliminar0").click(function(){
-      
-      $('.precio-total').text(precioTotal.toFixed(2));  
+    renderizar(carrito);
+  });
+
+  /*RENDERIZAR LISTADO DE ITEMS AGREGADOS*/ 
+  function renderizar (listado){
+
+    $('#carrito').empty();
+
+    for (const [nombre,precio] of listado){
+
+      $('#carrito').append(`<li>1 x <span class="nombre">${nombre}</span> <span class="precio">${precio}</span> 
+      <button type="button" class="btn btn-outline-danger boton-eliminar">X</button></li>`);
+    }
+
+    /*CALCULAR PRECIO*/ 
+    precioTotal=0;
+    for(i=0;i<listado.length;i++){
+      precioTotal+=listado[i][1];
+      console.log(precioTotal);
+    }
+    $('.precio-total').text(precioTotal.toFixed(2));
+
+
+    /*ELIMINAR ITEMS DEL LISTADO Y MODIFICAR PRECIO*/ 
+    $(".boton-eliminar").click(function(){
+
+      precioTotal-=$(this).parent().children(".precio").text();
+      console.log(precioTotal);
+      $('.precio-total').text(precioTotal.toFixed(2));
+     
+      $(".boton-agregar").attr('disabled', false);
+
+      var nombreEliminado = $(this).parent().children(".nombre").text();
+  
+      for(i=0;i<carrito.length;i++){
+        if (nombreEliminado==carrito[i][0])
+        {console.log("Hola");
+        carrito.splice(i,1);
+        console.log(carrito);
+        }
+      }
+
       $(this).parent().empty();
-    });
 
-  });   
-
+    })
+  }
   
   /*VACIAR EL CARRITO*/ 
   $("#boton-vaciar").click(function(){
     $("#carrito").empty();
     precioTotal=0;
     $('.precio-total').text(precioTotal.toFixed(2)); 
+    carrito=[];
+    console.log(carrito)
   });
+  
 
   /*COMPRAR CUANDO EL PRECIO ES MAYOR A 0*/ 
   $("#boton-comprar").click(function(){
